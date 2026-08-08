@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:auth-service}
+
+  cloud:
+    config:
+      enabled: ${SPRING_CLOUD_CONFIG_ENABLED:false}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth_db}
+    username: ${DB_USERNAME:auth_user}
+    password: ${DB_PASSWORD:vikash}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: ${JPA_FORMAT_SQL:false}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: ${EUREKA_REGISTER:true}
+    fetch-registry: ${EUREKA_FETCH:true}
+  instance:
+    prefer-ip-address: ${EUREKA_PREFER_IP:true}
+    instance-id: ${spring.application.name}:${server.port}
+
+jwt:
+  secret: ${JWT_SECRET:8f4b3c2a1e6d9f0b7c5a3e2d1f0b9c8a7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b}
+  expiration: ${JWT_EXPIRATION:900000}
+
+refresh-token:
+  expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,45 @@
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Git
+.git/
+.gitignore
+
+# Environment / secrets
+.env
+.env.*
+!.env-example
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.factorypath
+.project
+.settings/
+.sts4-cache
+
+# VS Code
+.vscode/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+HELP.md

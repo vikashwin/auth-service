@@ -1,0 +1,70 @@
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: auth-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - auth-postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - ecommerce-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: vikashwin/auth-service:latest
+    container_name: auth-service
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+
+    ports:
+      - "${SERVER_PORT:-8081}:8081"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - ecommerce-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  auth-postgres-data:
+
+networks:
+  ecommerce-network:
+    name: ecommerce-network
+    external: true   # set false if this is the only service using the network right now
