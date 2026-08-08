@@ -1,3 +1,4 @@
+
 # ============================================================
 # Stage 1: Build
 # ============================================================
@@ -27,7 +28,11 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Create non-root user
-RUN useradd --system --create-home --shell /usr/sbin/nologin spring
+RUN useradd \
+    --system \
+    --create-home \
+    --shell /usr/sbin/nologin \
+    spring
 
 COPY --from=builder /app/target/*.jar app.jar
 
