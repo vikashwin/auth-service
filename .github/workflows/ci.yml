@@ -1,47 +1,58 @@
+name: Auth Service CI
 
-  name: Auth Service CI
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
-  on:
-    push:
-      branches:
-        - main
-        - develop
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
 
-    pull_request:
-      branches:
-        - main
-        - develop
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: auth_db
+          POSTGRES_USER: auth_user
+          POSTGRES_PASSWORD: auth_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U auth_user -d auth_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-  permissions:
-    contents: read
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/auth_db
+      DB_USERNAME: auth_user
+      DB_PASSWORD: auth_password
+      # Any non-empty value works here — tests never send real tokens.
+      # Move to a repo secret (secrets.JWT_SECRET) once you have one configured.
+      JWT_SECRET: ci-test-secret-do-not-use-in-prod
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_REGISTER: "false"
+      EUREKA_FETCH: "false"
 
-  jobs:
-    build:
-      name: Build and Test
-      runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      steps:
-        - name: Checkout source
-          uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
 
-        - name: Set up Java 21
-          uses: actions/setup-java@v5
-          with:
-            distribution: temurin
-            java-version: "21"
-            cache: maven
+      - name: Build and test
+        run: mvn -B clean verify
 
-        - name: Verify Java
-          run: java -version
-
-        - name: Build and test
-          run: mvn clean verify -B
-
-        - name: Upload Test Reports
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: surefire-reports
-            path: target/surefire-reports/
-            if-no-files-found: warn
-
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: target/surefire-reports/
